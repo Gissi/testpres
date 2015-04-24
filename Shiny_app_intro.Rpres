@@ -1,0 +1,98 @@
+Developing data products - shiny app presentation
+========================================================
+author: Gissur Jónasson
+date: `r date()`
+
+
+Idea behind the app.
+========================================================
+transition: fade
+
+I am a huge football fan makeing it straigh forward to make an app analyzing data for english premier league fantasy game. therefore I choose to make an app about it 
+
+
+* web scraping the data from [EPL fantasy premierleague](http://http://fantasy.premierleague.com/)
+* enrich the data 
+* Use it for fun facts and spot players that are outliers when it comes to pricing
+
+What was created
+========================================================
+transition: rotate
+
+* function - fantasy()
+* Takes litle time to load give it a second.
+
+```{r, echo=FALSE, tidy=TRUE}
+fantasy <- function ()
+  
+{
+  
+  #Load libraries
+  rm(list=ls())
+  library("XML")  
+  all_fantasy_data_frame <- data.frame()
+  #loop through all sites to get the data 25 is enough 
+  for (i in 1:25) {
+    
+    #read in string
+    statistics_string <- paste("http://fantasy.premierleague.com/stats/elements/?stat_filter=total_points&element_filter=0&page=",i,sep="")  
+    
+    #read data
+    fantasy_data <- readHTMLTable(statistics_string, stringsAsFactors = FALSE)
+    
+    #Turn data into data frame the data is stored in the first elemnt of the table as a list
+    
+    fantasy_data_frame <- data.frame(fantasy_data[1])
+    
+    #The first 2 columns are blank. fix that only if the vector is not empty.
+    if (length(fantasy_data_frame) > 0 )
+    {
+      fantasy_data_frame <- fantasy_data_frame[,3:9]
+    }
+    
+    
+    #lets name the columns withou the null
+    
+    names(fantasy_data_frame) <- sub("NULL.","",names(fantasy_data_frame))  
+    all_fantasy_data_frame <- rbind(all_fantasy_data_frame,fantasy_data_frame)   
+    all_fantasy_data_frame$Price<-gsub("£","",all_fantasy_data_frame$Price)   
+    all_fantasy_data_frame$Total<-as.numeric(all_fantasy_data_frame$Total)
+    all_fantasy_data_frame$Price<-as.numeric(all_fantasy_data_frame$Price)
+    
+    
+  }
+  
+  return(all_fantasy_data_frame)
+  
+}
+```
+
+```{r, echo=TRUE, tidy=TRUE}
+
+points <- fantasy()
+points
+
+```
+
+This was the output for the local shiny app.
+======================================================== 
+
+
+![alt text](original_app.png)
+
+
+For some reason it did not work to add it to shinyapp.io
+======================================================== 
+transition: rotate
+
+* therefor created another app based on the old one but with built in data
+* url [Shiny app for course project](https://gissi.shinyapps.io/shiny_app1)
+* Next time I will try to do more advance things like using googlevis example graph below
+
+```{r MotionChartExample, results='asis', tidy=TRUE, echo=TRUE}
+library(googleVis)
+M <- gvisMotionChart(Fruits, 'Fruit', 'Year',
+         options=list(width=400, height=350))
+plot(M)
+```
+
